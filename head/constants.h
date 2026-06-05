@@ -1,0 +1,17 @@
+#ifndef _CONFIG_H_INCLUDED_
+#define _CONFIG_H_INCLUDED_
+
+#define MAX_STU_ID_LENGTH 12
+#define MAX_STU_NAME_LENGTH 20
+#define READ_LINE 20
+
+#define INITIAL_CAPACITY 100
+#define REALLOC_INCREMENT 20
+#define INTERVAL_LENGTH 4
+
+#define MAX_SENTENCE_LENGTH 188
+
+#define DEFAULT_FILEPATH "./data/grade.dat"
+#define FILEPATH_LENGTH 101
+
+#endif
