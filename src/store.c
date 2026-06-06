@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <errno.h>
 
 char filepath[FILEPATH_LENGTH] = DEFAULT_FILEPATH;
 
@@ -16,18 +17,17 @@ int change_data_source(const char* path) {
 		FILE* fp = fopen(path, "w");
 		if (fp)
 			fclose(fp);
-		else
+		else {
 			return 0;
+		}
 	}
 	snprintf(filepath, FILEPATH_LENGTH, "%s",  path);
 	return 1;
 }
 
 int load_data_file(const char* path) {
-	if (strcmp(filepath, path) != 0) {
-		if (!change_data_source(path))
-			return 0;
-	}
+	if (!change_data_source(path))
+		return 0;
 	FILE* fp = fopen(path, "r");
 	if (!fp)
 		return 0;

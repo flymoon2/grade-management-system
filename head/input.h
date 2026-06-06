@@ -5,6 +5,7 @@
 
 void clear_stdin_buffer(void);
 char *get_line(char *str, size_t size);
+int get_number();
 
 
 #endif

@@ -3,6 +3,7 @@
 #include "grade.h"
 #include "store.h"
 #include <stdio.h>
+#include <error.h>
 #include <stdlib.h>
 
 int main(int argc, char* argv[]) {
@@ -37,7 +38,9 @@ int main(int argc, char* argv[]) {
 			case 2: 
 				delete_student();
 				break;
-			case 3: break;
+			case 3: 
+			 	modify_grade_record();
+				break;
 			case 4: break;
 			case 5: 
 				print_all_records();

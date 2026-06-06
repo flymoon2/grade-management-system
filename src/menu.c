@@ -7,6 +7,20 @@
 #include "store.h"
 
 int
+get_choice(int limitation) {
+    int read_num = 1, input = 0;
+    while (1) {
+        if (read_num == 1 && input >= 0 && input <= limitation) {
+            return input;
+        } else {
+            printf("输入错误，请重新输入！\n");
+        }
+        input = scanf("%d", &input);
+        clear_stdin_buffer();
+    }
+}
+
+int
 confirm(const char *things_you_doing) {
 	char prompt[MAX_SENTENCE_LENGTH];
 	strncpy(prompt, things_you_doing, MAX_SENTENCE_LENGTH);
@@ -90,26 +104,67 @@ void print_all_records() {
 }
 
 void
-modify_grade() {
-	char stu_id[MAX_STU_ID_LENGTH];
+modify_grade_record() {
+	char input[MAX_STU_NAME_LENGTH];
 	int location = -1;
+	grade_record gcd;
+	char choice[CHOICE_SIZE];
 	do {
 		printf("请输入学号(输入q退出)：");
-		if (get_line(stu_id, MAX_STU_ID_LENGTH) == NULL) {
+		if (get_line(input, MAX_STU_ID_LENGTH) == NULL) {
 			printf("读取输入出错，请重新输入。\n");
 			continue;
 		}
-		location = find_by_id(stu_id);
+		location = find_by_id(input);
 		if (location == -1) {
 			printf("未查找到该生成绩！\n");
 			continue;
 		}
+		get_record_by_index(location, &gcd);
 		printf("将更改以下记录：\n");
-		show_record(location);
-		grade_record rcd;
-		printf("请输入姓名(输入Enter跳过)：");
-		strncpy(stu_id, "q", MAX_STU_ID_LENGTH);
-	} while (strcmp(stu_id, "q") != 0);
+		show_grade_title();
+		show_record_entity(&gcd);
+		printf("0. 姓名；1. 语文成绩；2. 数学成绩；3. 英语成绩\n"
+			"请输入要修改的数据项：");
+		if (get_line(choice, CHOICE_SIZE) != NULL) {
+			int len = strlen(choice);
+			for (int i = 0; i < len; i++) {
+				switch(choice[i]) {
+					case '0':
+						printf("请输入新姓名：");
+						if (get_line(input, MAX_STU_NAME_LENGTH)) {
+							modify_student_name(&gcd.stu, input);
+						} else {
+							printf("姓名输入错误，修改未生效！\n");
+						}
+						break;
+					case '1':
+						printf("请输入新的语文成绩：");
+						gcd.chinese = get_number();
+						calc_grade(&gcd);
+						break;
+					case '2':
+						printf("请输入新的数学成绩：");
+						gcd.math = get_number();
+						calc_grade(&gcd);
+						break;
+					case '3':
+						printf("请输入新的英语成绩：");
+						gcd.english = get_number();
+						calc_grade(&gcd);
+						break;
+					default: ;
+				}
+			}
+		}
+		printf("修改后的成绩如下：\n");
+		show_grade_title();
+		show_record_entity(&gcd);
+		if (confirm("正在修改成绩！")) {
+			modify_record(location, &gcd);
+		}
+		strncpy(input, "q", MAX_STU_ID_LENGTH);
+	} while (strcmp(input, "q") != 0);
 }
 
 void

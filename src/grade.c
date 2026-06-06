@@ -11,12 +11,6 @@ static int record_count = 0;
 static int record_capacity = 0;
 
 void
-calc_grade(grade_record *rcd) {
-	rcd->total = rcd->chinese + rcd->math + rcd->english;
-	rcd->average = rcd->total / 3.0;
-}
-
-void
 copy_record(const grade_record* src, grade_record* dest) {
 	copy_student(&src->stu, &dest->stu);
 	dest->chinese = src->chinese;
@@ -203,13 +197,6 @@ void show_record(int location) {
 				INTERVAL_LENGTH, records[location].english,
 				INTERVAL_LENGTH, records[location].total,
 				records[location].average);
-}
-
-void
-read_record_from_input(grade_record *rcd) {
-	char buffe[READ_LINE];
-	printf("请输入学号：");
-	get_line(buffer, );
 }
 
 void

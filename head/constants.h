@@ -10,6 +10,7 @@
 #define INTERVAL_LENGTH 4
 
 #define MAX_SENTENCE_LENGTH 188
+#define CHOICE_SIZE 20
 
 #define DEFAULT_FILEPATH "./data/grade.dat"
 #define FILEPATH_LENGTH 101
