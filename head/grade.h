@@ -38,6 +38,13 @@ enum find_key {
 
 
 static inline void
+swap(int *a, int *b) {
+	int tmp = *a;
+	*a = *b;
+	*b = tmp;
+}
+
+static inline void
 calc_grade(grade_record *rcd) {
 	rcd->total = rcd->chinese + rcd->math + rcd->english;
 	rcd->average = (rcd->total) / 3;
@@ -55,6 +62,8 @@ show_record_entity(const grade_record *rcd) {
 			rcd->average);
 }
 
+
+int regex_match(const char *restrict pattern, const char *restrict string);
 void copy_record(const grade_record *src, grade_record *dest);
 grade_record *duplicate_records();
 int initial_records();
@@ -65,9 +74,12 @@ int delete_record(int location);
 int modify_record(int location, grade_record *stu_grade);
 int get_record_by_index(int location, grade_record *stu_grade);
 int find_by_id(const char *stu_id);
+int *find_by_name(const char *stu_name, size_t *size, void (**func)(void*));
 void clear_records();
 int comp(grade_record* a, grade_record* b, enum sort_key sort_by, enum sort_order sort_in);
 void quick_sort(grade_record* dest, size_t count, int (*comp)(grade_record*, grade_record*, enum sort_key, enum sort_order));
+void quick_sort_index(grade_record *records, int *idxs, int low, int high, int (*comp)(grade_record*, grade_record*, enum sort_key, enum sort_order));
+void get_grade_statistics();
 void show_records();
 void show_record(int location);
 void save_to_file();

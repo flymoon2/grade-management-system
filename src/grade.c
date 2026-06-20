@@ -5,10 +5,39 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <regex.h>
+
+#define STR(x) #x
+#define STR_CAT(a, b)) STR(a) STR(b)
 
 static grade_record* records = NULL;
 static int record_count = 0;
 static int record_capacity = 0;
+
+int
+regex_match(const char *restrict pattern, const char *restrict string) {
+	regex_t regex;
+	int reti;
+	char regex_pattern[MAX_REGEX_LENGTH];
+
+	snprintf(regex_pattern, MAX_REGEX_LENGTH, "%s%s%s", ".*", pattern, ".*");
+	printf("%s\n", regex_pattern);
+	reti = regcomp(&regex, regex_pattern, 0);
+	if (reti) {
+		printf("匹配出错！\n");
+		return -1;
+	}
+	reti = regexec(&regex, string, 0, NULL, 0);
+	regfree(&regex);
+	if (!reti)
+		return 1;
+	else if (reti == REG_NOMATCH)
+		return 0;
+	else {
+		printf("匹配出错！\n");
+		return -1;
+	}
+}
 
 void
 copy_record(const grade_record* src, grade_record* dest) {
@@ -29,23 +58,41 @@ find_by_id(const char *stu_id) {
 	return -1;
 }
 
+int*
+find_by_name(const char *stu_name, size_t *size, void (**func)(void*)) {
+	size_t count = 0;
+	int *match_list = (int*)malloc(sizeof(int) * record_count);
+	if (match_list == NULL) {
+		return NULL;
+	}
+	for (int i = 0; i < record_count; i++) {
+		if (regex_match(stu_name, records[i].stu.stu_name) == 1) {
+			match_list[count++] = i;
+		}
+	}
+	(*func) = free;
+	match_list = realloc(match_list, count);
+	*size = count;
+	return match_list;
+}
+
 int
 comp(grade_record* a, grade_record* b, enum sort_key sort_by, enum sort_order sort_in) {
 	switch (sort_by) {
 		case SORT_BY_ID:
-			return sort_in && strcmp(a->stu.stu_id, b->stu.stu_id) <= 0;
+			return sort_in && (strcmp(a->stu.stu_id, b->stu.stu_id) == 0 || strcmp(a->stu.stu_id, b->stu.stu_id) < 0);
 		case SORT_BY_NAME:
-			return sort_in && strcmp(a->stu.stu_name, b->stu.stu_name) <= 0;
+			return sort_in && (strcmp(a->stu.stu_name, b->stu.stu_name) == 0 || strcmp(a->stu.stu_name, b->stu.stu_name) < 0);
 		case SORT_BY_TOTAL:
-			return sort_in && a->total <= b->total;
+			return sort_in && (a->total == b->total || a->total < b->total);
 		case SORT_BY_CHINESE:
-			return sort_in && a->chinese <= b->chinese;
+			return sort_in && (a->chinese == b->chinese || a->chinese < b->chinese);
 		case SORT_BY_MATH:
-			return sort_in && a->math <= b->math;
+			return sort_in && (a->math == b->math || a->math < b->math);
 		case SORT_BY_ENGLISH:
-			return sort_in && a->english <= b->english;
+			return sort_in && (a->english == b->english || a->english < b->english);
 		case SORT_BY_AVERAGE:
-			return sort_in && a->average <= b->average;
+			return sort_in && (a->average == b->average || a->average < b->average);
 	}	
 	return 1;
 }
@@ -72,6 +119,45 @@ quick_sort(grade_record* dest, size_t count, int (*comp)(grade_record*, grade_re
 	copy_record(&rcd, dest + left);
 	quick_sort(dest, left, comp);
 	quick_sort(dest + left + 1, count - left - 1, comp);
+}
+
+void
+quick_sort_index(grade_record *records, int *idxs, int low, int high, int (*comp)(grade_record*, grade_record*, enum sort_key, enum sort_order)) {
+	if (low >= high)
+		return;
+	int pivot_idx = (low + high) / 2;
+	int pivot = idxs[pivot_idx];
+	swap(idxs + low, idxs + pivot_idx);
+	int left = low, right = high;
+	while (left < right) {
+		while (left < right &&
+			comp(&records[pivot], &records[idxs[right]], SORT_BY_TOTAL, SORT_ASC))	
+			right--;
+		idxs[left] = idxs[right];
+		while (left < right &&
+			comp(&records[idxs[left]], &records[pivot], SORT_BY_TOTAL, SORT_ASC))
+			left++;
+		idxs[right] = idxs[left];
+	}
+	idxs[left] = pivot;
+	quick_sort_index(records, idxs, low, left - 1, comp);
+	quick_sort_index(records, idxs, left + 1, high, comp);
+}
+
+void
+get_grade_statistics() {
+	if (record_count <= 0)
+		return;
+	int *idxs = malloc(sizeof(int) * record_count);
+	if (!idxs)
+		return;
+	for (int i = 0; i < record_count; i++)
+		idxs[i] = i;
+	quick_sort_index(records, idxs, 0, record_count - 1, comp);
+	show_grade_title();
+	for (int i = 0; i < record_count; i++)
+		show_record(idxs[i]);
+	free(idxs);
 }
 
 void
