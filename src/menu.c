@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "constants.h"
 #include "grade.h"
 #include "menu.h"
@@ -8,14 +9,18 @@
 
 int
 get_choice(int limitation) {
-    int read_num = 1, input = 0;
+    int read_num = 1, input = 0, begin = 1;
     while (1) {
-        if (read_num == 1 && input >= 0 && input <= limitation) {
-            return input;
-        } else {
-            printf("输入错误，请重新输入！\n");
-        }
-        input = scanf("%d", &input);
+		if (begin) {
+			begin = 0;
+		} else {
+			if (read_num == 1 && input >= 0 && input <= limitation) {
+				return input;
+			} else {
+				printf("输入错误，请重新输入：\n");
+			}
+		}
+        read_num = scanf("%d", &input);
         clear_stdin_buffer();
     }
 }
@@ -27,7 +32,7 @@ confirm(const char *things_you_doing) {
 	char input[INTERVAL_LENGTH];
 	printf("%s\n", prompt);
 	printf("您确认要继续吗？输入“yes”以继续，输入其它任何内容退出：");
-	get_line(input, INTERVAL_LENGTH);
+	get_line(input, CONFIRM_SIZE);
 	if (strcmp(input, "yes") == 0)
 		return 1;
 	return 0;
@@ -165,6 +170,51 @@ modify_grade_record() {
 		}
 		strncpy(input, "q", MAX_STU_ID_LENGTH);
 	} while (strcmp(input, "q") != 0);
+}
+
+void
+select_grade_record() {
+	int choice = 0;
+	size_t count = 0;
+	int location = -1;
+	void (**func)(void*) = (void*)malloc(sizeof(void**));
+	char input[MAX_STU_NAME_LENGTH];
+	int *match_list = NULL;
+	printf("查询依据：0. 学号；1. 姓名；\n"
+		"请选择查询依据：");
+	choice = get_choice(2);
+	printf("请输入%s：", choice ? "姓名" : "学号");
+	if (get_line(input, MAX_STU_NAME_LENGTH) == NULL) {
+		perror("输入错误，查询结束！\n");
+		return ;
+	}
+	if (!choice) {
+		location = find_by_id(input);
+		if (location != -1)
+			count = 1;
+	} else {
+		match_list = find_by_name(input, &count, func);
+		if (match_list == NULL) {
+			printf("查询出错！\n");
+			return;
+		}
+	}
+	if (count > 0) {
+		show_grade_title();
+		if (match_list == NULL) {
+			show_record(location);
+		} else {
+			for (int i = 0; i < count; i++) {
+				show_record(match_list[i]);
+			}
+		}
+	} else {
+		printf("未查询到相关信息！\n");
+	}
+	if (match_list) {
+		(*func)(match_list);
+	}
+	free(func);
 }
 
 void

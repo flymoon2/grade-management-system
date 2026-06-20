@@ -41,11 +41,15 @@ int main(int argc, char* argv[]) {
 			case 3: 
 			 	modify_grade_record();
 				break;
-			case 4: break;
+			case 4: 
+			 	select_grade_record();
+				break;
 			case 5: 
 				print_all_records();
 				break;
-			case 6: break;
+			case 6: 
+				get_grade_statistics();
+				break;
 			case 7: 
 				save_to_file();
 				printf("再见~\n");
